@@ -2,6 +2,8 @@ package com.example.ClimaAPI.service;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 public class Service {
     private static final String BASE_URL_FORECAST = "https://api.open-meteo.com/v1/forecast?";
@@ -24,13 +26,21 @@ public class Service {
     }
 
     public String consultarLocalizacao(String localizacao) {
-        return consultarURL(BASE_URL_GEOCODING + "&name=" + localizacao);
+        String json = consultarURL(BASE_URL_GEOCODING + "name=" + localizacao);
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(json);
+
+        double latitude = root.get("results").get(0).get("latitude").asDouble();
+        double longitude = root.get("results").get(0).get("longitude").asDouble();
+
+        return "latitude=" + latitude + "&longitude=" + longitude;
     }
 
-    public String consultarClima(String longitudeLatitude) {
+    public String consultarClima(String latitudeLongitude) {
         return consultarURL(
                 BASE_URL_FORECAST
-                + longitudeLatitude
+                + latitudeLongitude
                 + "&current=temperature_2m"
                 + "&current=relative_humidity_2m"
                 + "&current=wind_speed_10m"
@@ -41,37 +51,5 @@ public class Service {
                 + "&timezone=auto"
                 + "&current=temperature_2m"
         );
-    }
-
-    public String consultarTemperaturaAtual(String longitudeLatitude) {
-        return consultarURL(BASE_URL_FORECAST + longitudeLatitude + "&current=temperature_2m");
-    }
-
-    public String consultarUmidadeDoAr(String longitudeLatitude) {
-        return consultarURL(BASE_URL_FORECAST + longitudeLatitude + "&current=relative_humidity_2m");
-    }
-
-    public String consultarVelocidadeDoVento(String longitudeLatitude) {
-        return consultarURL(BASE_URL_FORECAST + longitudeLatitude + "&current=wind_speed_10m");
-    }
-
-    public String consultarDirecaoDoVento(String longitudeLatitude) {
-        return consultarURL(BASE_URL_FORECAST + longitudeLatitude + "&current=wind_direction_10m");
-    }
-
-    public String consultarTemperaturaMaxima(String longitudeLatitude) {
-        return consultarURL(BASE_URL_FORECAST + longitudeLatitude + "&daily=temperature_2m_max");
-    }
-
-    public String consultarTemperaturaMinima(String longitudeLatitude) {
-        return consultarURL(BASE_URL_FORECAST + longitudeLatitude + "&daily=temperature_2m_min");
-    }
-
-    public String consultarCondicao(String longitudeLatitude) {
-        return consultarURL(BASE_URL_FORECAST + longitudeLatitude + "&current=weather_code");
-    }
-
-    public String receberDataHora(String longitudeLatitude) {
-        return consultarURL(BASE_URL_FORECAST + longitudeLatitude + "&timezone=auto");
     }
 }
