@@ -1,5 +1,6 @@
 package com.example.ClimaAPI.service;
 
+import com.example.ClimaAPI.model.Clima;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import tools.jackson.databind.JsonNode;
@@ -29,16 +30,20 @@ public class Service {
         String json = consultarURL(BASE_URL_GEOCODING + "name=" + localizacao);
 
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode root = mapper.readTree(json);
 
-        double latitude = root.get("results").get(0).get("latitude").asDouble();
-        double longitude = root.get("results").get(0).get("longitude").asDouble();
+        JsonNode root = mapper.readTree(json),
+                result = root.get("results").get(0);
+
+        double latitude = result.get("latitude").asDouble(),
+                longitude = result.get("longitude").asDouble();
 
         return "latitude=" + latitude + "&longitude=" + longitude;
     }
 
-    public String consultarClima(String latitudeLongitude) {
-        return consultarURL(
+    public String consultarClima(String localizacao) {
+        String latitudeLongitude = consultarLocalizacao(localizacao);
+
+        String jsonExtract = consultarURL(
                 BASE_URL_FORECAST
                 + latitudeLongitude
                 + "&current=temperature_2m"
@@ -51,5 +56,27 @@ public class Service {
                 + "&timezone=auto"
                 + "&current=temperature_2m"
         );
+
+        ObjectMapper mapperExtract = new ObjectMapper();
+
+        JsonNode rootExtract = mapperExtract.readTree(jsonExtract),
+                current = rootExtract.get("current"),
+                currentUnits = rootExtract.get("current_units"),
+                daily = rootExtract.get("daily"),
+                dailyUnits = rootExtract.get("daily_units");
+
+        String temperaturaAtual = current.get("temperature_2m").asString() + currentUnits.get("temperature_2m").asString(),
+                arUmidade = current.get("relative_humidity_2m").asString() + currentUnits.get("relative_humidity_2m").asString(),
+                ventoVelocidade = current.get("wind_speed_10m").asString() + currentUnits.get("wind_speed_10m").asString(),
+                ventoDirecao = current.get("wind_direction_10m").asString() + currentUnits.get("wind_direction_10m").asString(),
+                temperaturaMaxima = daily.get("temperature_2m_max").get(0).asString() + dailyUnits.get("temperature_2m_max").asString(),
+                temperaturaMinima = daily.get("temperature_2m_min").get(0).asString() + dailyUnits.get("temperature_2m_min").asString(),
+                dataHorario = current.get("time").asString();
+
+        Clima clima = new Clima(temperaturaAtual, arUmidade, ventoVelocidade, ventoDirecao, temperaturaMaxima, temperaturaMinima, dataHorario);
+
+        ObjectMapper mapperCreate = new ObjectMapper();
+
+        return mapperCreate.writeValueAsString(clima);
     }
 }
