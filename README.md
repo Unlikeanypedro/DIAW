@@ -1,17 +1,16 @@
-# ClimaAPI
-
-API REST desenvolvida com Spring Boot para consultar o clima de uma cidade utilizando as APIs da [Open-Meteo](https://open-meteo.com/).
+# Tela de Login
+ 
+Projeto desenvolvido com Spring Boot e Thymeleaf
+Simples tela de login
 
 ## Tecnologias e Dependências
 
 - Java
 - Spring Boot
 - Maven
+- Thymeleaf
 
 ## Endpoints
 
-- `GET /clima` - retorna o clima atual de Belo Horizonte
-- `GET /clima/{cidade}` - retorna o clima atual de uma cidade
+- `GET /login` - retorna o clima atual de Belo Horizonte
 
-> [!NOTE]
-> Utilize **+** no lugar dos **espaços** (ex: `/clima/Belo+Horizonte`)
